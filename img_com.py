@@ -4,6 +4,7 @@ from argparse import ArgumentParser
 import matplotlib.pyplot as plt
 import numpy as np
 from PIL import Image
+from project import SVD
 
 
 def main(img_path):
@@ -13,27 +14,26 @@ def main(img_path):
         img_matrix.shape = (imggray.size[1], imggray.size[0])
         img_matrix = np.matrix(img_matrix)
         U, sigma, V = np.linalg.svd(img_matrix)
-        ss = np.sum(sigma)
+        trace = np.sum(sigma)
         ff = 0
         rank = {}
-        print("size", np.size(sigma))
-        print("sum", np.sum(sigma))
+
+        # print("size", np.size(sigma))
+        # print("sum", np.sum(sigma))
         for i in range(np.size(sigma)):
             ff += sigma[i]
-            percentage = int((ff / ss)*100)
-            if (percentage in rank):
-                continue
-            rank[percentage] = i
-        print(rank)
-        c = np.percentile(sigma, 1, method='linear')
-        # print(c)
-        # for i in rank:
-        #     c = np.percentile(sigma, i)
-        #     print(c)
-        #     c = int(np.size(sigma)*i/100)
-        #     reconstimg = (np.matrix(U[:, :c]) *
-        #                   np.diag(sigma[:c]) * np.matrix(V[:c, :])).astype(np.uint8)
-        #     Image.fromarray(reconstimg).save(f"img/{i}%.tiff", 'tiff')
+            percentage = int((ff / trace)*100)
+            # if (percentage in rank):
+            #     continue
+            if (i == 0 or i % 10 == 9):
+                rank[i] = percentage
+        # print(rank)
+        for k, v in rank.items():
+            print(f"rank: {k+1}, percentage: {v}")
+            reconstimg = (np.matrix(U[:, :k+1]) *
+                          np.diag(sigma[:k+1]) * np.matrix(V[:k+1, :])).astype(np.uint8)
+            Image.fromarray(reconstimg).save(
+                f"img/rank{k+1}_{v}%.tiff", 'tiff')
 
 
 if __name__ == "__main__":
