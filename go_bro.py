@@ -2,7 +2,7 @@
 
 from argparse import ArgumentParser
 import numpy as np
-from project import SVD
+import time
 
 
 def cosine_similarity(vector1, vector2):
@@ -27,6 +27,7 @@ def knn(train_data, test_usr, k, distance_fn):
 
 
 def main(data_set: str, k_value: int, c_value: int):
+    start_time = time.time()
     data = np.loadtxt(open(data_set, "rb"),
                       delimiter=",")
     # split dataset into trainning and test
@@ -36,13 +37,15 @@ def main(data_set: str, k_value: int, c_value: int):
     test_set = data[training_row:]
 
     u, s, v = np.linalg.svd(trainning_set)
-
+    rank_v = np.linalg.matrix_rank(v)
+    rank_u = np.linalg.matrix_rank(u)
+    print("Rank:", min(rank_u, rank_v))
     v_tran = np.transpose(v)
     total_error = 0
     # transform the test_user to truncated format
     for i in range(test_set.shape[0]):
         test_user_orig = np.matrix(test_set[[i], :])
-        print(test_user_orig)
+        # print(test_user_orig)
         test_user_new = np.matrix(test_set[[i], :]) * \
             np.matrix(v_tran[:, :c_value]) * \
             np.linalg.inv(np.diag(s[:c_value]))
@@ -51,18 +54,19 @@ def main(data_set: str, k_value: int, c_value: int):
                   k_value, cosine_similarity)
         reconstruct = (np.matrix(u[res, :c_value]) *
                        np.diag(s[:c_value]) * np.matrix(v[:c_value, :]))
-        print("reconstruct", reconstruct)
+        # print("reconstruct", reconstruct)
         prediction = reconstruct.mean(0)
-        print("prediction", prediction)
+        # print("prediction", prediction)
         error = 0
         review_count = 0
         for j in range(test_user_orig.shape[1]):
             if (test_user_orig[0, j] != 0):
                 error += abs(test_user_orig[0, j] - prediction[0, j])
                 review_count += 1
-        print("error/review_count", error/review_count)
+        # print("error/review_count", error/review_count)
         total_error += error/review_count
-        print("total_error/user", total_error/test_set.shape[0])
+    print(f"The execution time is: {time.time() - start_time} seconds")
+    print("total_error/user", total_error/test_set.shape[0])
 
 
 if __name__ == "__main__":
