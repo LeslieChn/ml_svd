@@ -6,31 +6,34 @@ import scipy.linalg as la
 
 
 def main():
-    data = pd.io.parsers.read_csv('./data/ratings.csv', delimiter=',')
-    movie_data = pd.io.parsers.read_csv('./data/movies.csv', delimiter=',')
+    ratings = pd.io.parsers.read_csv('./data/ratings.csv', delimiter=',')
+    movies = pd.io.parsers.read_csv('./data/movies.csv', delimiter=',')
 
+    ratings_mat = ratings.pivot(index = 'movieId', columns = 'userId', values = 'rating')
+    ratings_mat.fillna(0,inplace=True)
+    
     # small test data (10users, 10 movies, no NaN entries)
     dataTest = pd.io.parsers.read_csv('./data/ratingsTiny.csv', delimiter=',')
     movie_dataTest = pd.io.parsers.read_csv(
         './data/MoviesTiny.csv', delimiter=',')
 
-    ratings_mat = np.ndarray(
-        shape=(np.max(data.movieId.values), np.max(data.userId.values)),
-        dtype=np.uint8)
-    ratings_mat[data.movieId.values-1,
-                data.userId.values-1] = data.rating.values
+    no_user_voted = ratings.groupby('movieId')['rating'].agg('count')
+    no_movies_voted = ratings.groupby('userId')['rating'].agg('count')
 
-    # test data block
+    ratings_mat = ratings_mat.loc[:, no_movies_voted[no_movies_voted>50].index]
+    ratings_mat = ratings_mat.to_numpy().T
+   
+   # test data block
     ratings_mat_test = np.ndarray(
         shape=(np.max(dataTest.movieId.values),
                np.max(dataTest.userId.values)),
         dtype=np.uint8)
     print("shape:", ratings_mat_test.shape)
+   
     ratings_mat_test[dataTest.movieId.values-1,
                      dataTest.userId.values-1] = dataTest.rating.values
 
-   # normalised_mat = ratings_mat - np.asarray([(np.mean(ratings_mat, 1))]).T
-    A = ratings_mat.T
+    A = ratings_mat
     # set all zero entries (non rated movies) to 2
     A[A==0] = 2
     ATest = ratings_mat_test.T
