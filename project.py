@@ -29,19 +29,15 @@ def main():
     ratings_mat_test[dataTest.movieId.values-1,
                      dataTest.userId.values-1] = dataTest.rating.values
 
-    normalised_mat = ratings_mat - np.asarray([(np.mean(ratings_mat, 1))]).T
-
-    # test data block
-    normalised_mat_test = ratings_mat_test - \
-        np.asarray([(np.mean(ratings_mat_test, 1))]).T
-
-    A = normalised_mat.T / np.sqrt(ratings_mat.shape[0] - 1)
-
-    # test data block
-    ATest = normalised_mat_test.T / np.sqrt(ratings_mat_test.shape[0] - 1)
+   # normalised_mat = ratings_mat - np.asarray([(np.mean(ratings_mat, 1))]).T
+    A = ratings_mat.T
+    # set all zero entries (non rated movies) to 2
+    A[A==0] = 2
+    ATest = ratings_mat_test.T
 
     print(np.shape(A))
-    print(ATest[0])
+    print(A)
+    print(ATest)
     # print(np.shape(ATest))  # looks good
     u1, s1, v1 = SVD(ATest)
 ##############################################
@@ -71,7 +67,7 @@ def SVD(A):
     roots = np.sqrt(np.abs(w))  # what to do if eig vals are negative?
     sorted = np.sort(roots)[::-1]  # sort in descending order
     # k = 0 specifices main diagonal, square roots of w
-    Sigma = np.diag(sorted, k=0)
+   # Sigma = np.diag(sorted, k=0)
 
     # U: uniquely determined by V. Ui = Vi@A/sigmai
     i = 0
@@ -85,7 +81,7 @@ def SVD(A):
         i += 1
 
     U = m
-    return U, Sigma, V
+    return U, sorted, V
 
 
 # if Anxm : U nxn, Sigma nxm, V mxm
