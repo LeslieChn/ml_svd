@@ -39,7 +39,7 @@ def main(data_set: str, k_value: int, c_value: int):
     u, s, v = np.linalg.svd(trainning_set)
     rank_v = np.linalg.matrix_rank(v)
     rank_u = np.linalg.matrix_rank(u)
-    print("Rank:", min(rank_u, rank_v))
+    # print("Rank:", min(rank_u, rank_v))
     v_tran = np.transpose(v)
     total_error = 0
     # transform the test_user to truncated format
@@ -66,7 +66,7 @@ def main(data_set: str, k_value: int, c_value: int):
         # print("error/review_count", error/review_count)
         total_error += error/review_count
     print(f"The execution time is: {time.time() - start_time} seconds")
-    print("total_error/user", total_error/test_set.shape[0])
+    print("Error", total_error/test_set.shape[0])
 
 
 if __name__ == "__main__":

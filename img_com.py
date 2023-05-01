@@ -25,15 +25,15 @@ def main(img_path):
             percentage = int((ff / trace)*100)
             # if (percentage in rank):
             #     continue
-            if (i == 0 or i % 10 == 9):
-                rank[i] = percentage
+            # if (i == 0 or i % 10 == 9):
+            rank[i] = percentage
         # print(rank)
         for k, v in rank.items():
             print(f"rank: {k+1}, percentage: {v}")
             reconstimg = (np.matrix(U[:, :k+1]) *
                           np.diag(sigma[:k+1]) * np.matrix(V[:k+1, :])).astype(np.uint8)
             Image.fromarray(reconstimg).save(
-                f"img/rank{k+1}_{v}%.tiff", 'tiff')
+                f"img_2/{k+1}.jpg", 'jpeg')
 
 
 if __name__ == "__main__":
