@@ -9,9 +9,10 @@ def main():
     ratings = pd.io.parsers.read_csv('./data/ratings.csv', delimiter=',')
     movies = pd.io.parsers.read_csv('./data/movies.csv', delimiter=',')
 
-    ratings_mat = ratings.pivot(index = 'movieId', columns = 'userId', values = 'rating')
-    ratings_mat.fillna(0,inplace=True)
-    
+    ratings_mat = ratings.pivot(
+        index='movieId', columns='userId', values='rating')
+    ratings_mat.fillna(0, inplace=True)
+
     # small test data (10users, 10 movies, no NaN entries)
     dataTest = pd.io.parsers.read_csv('./data/ratingsTiny.csv', delimiter=',')
     movie_dataTest = pd.io.parsers.read_csv(
@@ -20,22 +21,23 @@ def main():
     no_user_voted = ratings.groupby('movieId')['rating'].agg('count')
     no_movies_voted = ratings.groupby('userId')['rating'].agg('count')
 
-    ratings_mat = ratings_mat.loc[:, no_movies_voted[no_movies_voted>50].index]
+    ratings_mat = ratings_mat.loc[:,
+                                  no_movies_voted[no_movies_voted > 50].index]
     ratings_mat = ratings_mat.to_numpy().T
-   
+
    # test data block
     ratings_mat_test = np.ndarray(
         shape=(np.max(dataTest.movieId.values),
                np.max(dataTest.userId.values)),
         dtype=np.uint8)
     print("shape:", ratings_mat_test.shape)
-   
+
     ratings_mat_test[dataTest.movieId.values-1,
                      dataTest.userId.values-1] = dataTest.rating.values
 
     A = ratings_mat
     # set all zero entries (non rated movies) to 2
-    A[A==0] = 2
+    A[A == 0] = 2
     ATest = ratings_mat_test.T
 
     print(np.shape(A))
@@ -67,22 +69,24 @@ def SVD(A):
 
     # Sigma: diagonal matrix whose entries are the sqrt of eigenvalues of Atranspose*A / A*Atranspose
 
-    roots = np.sqrt(np.abs(w))  # what to do if eig vals are negative?
+    roots = np.sqrt(np.abs(w))  # eigenvalue has to be positive
     sorted = np.sort(roots)[::-1]  # sort in descending order
+    # truncate with tolerance
     # k = 0 specifices main diagonal, square roots of w
    # Sigma = np.diag(sorted, k=0)
 
     # U: uniquely determined by V. Ui = Vi@A/sigmai
     i = 0
-    m = np.zeros(10)
+    # m = np.zeros(10)
     for x in V:
-        y = 1/(sorted[i])*(x@A)
+        y = 1/(sorted[i])*(A@x)
         if (i == 0):
             m = y
         else:
             m = np.c_[m, y]
         i += 1
-
+        if i >= np.minimum(np.shape(A)[0], np.shape(A)[1]):
+            break
     U = m
     return U, sorted, V
 
